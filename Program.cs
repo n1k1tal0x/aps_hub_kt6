@@ -1,3 +1,5 @@
+using asp_hub_kt7.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace asp_hub_kt7
@@ -7,16 +9,20 @@ namespace asp_hub_kt7
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            string connectionString = "postgres://postgres:qwerty123@localhost:5432/testbd";
+            string connectionString =
+                "Host=localhost;Port=5432;Database=testbd;Username=postgres;Password=qwerty123;";
             // Add services to the container.
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(connectionString)
+            );
 
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<Models.AppDbContext>();
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 context.Database.Migrate();
             }
             // Configure the HTTP request pipeline.
