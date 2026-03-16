@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using asp_hub_kt7.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -41,14 +42,30 @@ namespace asp_hub_kt7
                 }
             );
 
+            app.MapPost(
+                "/api/UpdateEmail",
+                async (string SearchName, [FromBody] UpdateEmailBody newMailObj, AppDbContext db) =>
+                {
+                    var targets = db.Users.Where(x => x.Name == SearchName);
+                    await targets.ForEachAsync(
+                        async (User user) =>
+                        {
+                            user.Email = newMailObj.newEmail;
+                        }
+                    );
+                    await db.SaveChangesAsync();
+                    return Results.Ok();
+                }
+            );
+
             app.UseHttpsRedirection();
 
             app.Run();
         }
 
-        record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+        public class UpdateEmailBody
         {
-            public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+            public string newEmail { get; set; }
         }
     }
 }
