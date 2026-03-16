@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using asp_hub_kt7.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace asp_hub_kt7
 {
@@ -9,6 +10,13 @@ namespace asp_hub_kt7
     {
         public static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.File("logs/log.txt")
+                .CreateLogger();
+
+            Log.Information("Application started");
+
             var builder = WebApplication.CreateBuilder(args);
             string connectionString =
                 "Host=localhost;Port=5432;Database=testbd;Username=postgres;Password=qwerty123;";
@@ -36,13 +44,18 @@ namespace asp_hub_kt7
                 "/api/User",
                 async ([FromBody] Models.User newUser, AppDbContext db) =>
                 {
+                    Log.Information("Request /api/User started");
+                    Log.Information("Checking database connection");
                     if (!await db.Database.CanConnectAsync())
                     {
+                        Log.Information("Database is unavailable for /api/User");
                         return Results.Problem("No access to the database");
                     }
 
+                    Log.Information("Adding new user");
                     db.Users.Add(newUser);
                     await db.SaveChangesAsync();
+                    Log.Information("User saved successfully");
                     return Results.Ok();
                 }
             );
@@ -51,12 +64,17 @@ namespace asp_hub_kt7
                 "/api/UpdateEmail",
                 async (string SearchName, [FromBody] UpdateEmailBody newMailObj, AppDbContext db) =>
                 {
+                    Log.Information("Request /api/UpdateEmail started");
+                    Log.Information("Checking database connection");
                     if (!await db.Database.CanConnectAsync())
                     {
+                        Log.Information("Database is unavailable for /api/UpdateEmail");
                         return Results.Problem("No access to the database");
                     }
 
+                    Log.Information("Searching users by name");
                     var targets = db.Users.Where(x => x.Name == SearchName);
+                    Log.Information("Updating email for found users");
                     await targets.ForEachAsync(
                         async (User user) =>
                         {
@@ -64,6 +82,7 @@ namespace asp_hub_kt7
                         }
                     );
                     await db.SaveChangesAsync();
+                    Log.Information("Email update finished");
                     return Results.Ok();
                 }
             );
@@ -72,11 +91,15 @@ namespace asp_hub_kt7
                 "/api/transacrtions/User",
                 async ([FromBody] Models.User newUser, AppDbContext db) =>
                 {
+                    Log.Information("Request /api/transacrtions/User started");
+                    Log.Information("Checking database connection");
                     if (!await db.Database.CanConnectAsync())
                     {
+                        Log.Information("Database is unavailable for /api/transacrtions/User");
                         return Results.Problem("No access to the database");
                     }
 
+                    Log.Information("Starting transaction");
                     await using var transaction = await db.Database.BeginTransactionAsync();
 
                     User NewUser = new User
@@ -85,15 +108,18 @@ namespace asp_hub_kt7
                         Email = newUser.Email,
                         Age = newUser.Age,
                     };
+                    Log.Information("Adding user inside transaction");
                     db.Users.Add(NewUser);
                     await db.SaveChangesAsync();
                     if (NewUser.Age >= 18)
                     {
+                        Log.Information("Transaction committed");
                         await transaction.CommitAsync();
                         return Results.Ok(NewUser);
                     }
                     else
                     {
+                        Log.Information("Transaction rolled back because age is smaller than 18");
                         await transaction.RollbackAsync();
                         return Results.BadRequest("age smaller 18!");
                     }
