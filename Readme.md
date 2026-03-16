@@ -54,3 +54,15 @@ BODY:
 ```
 если возраст 18 и больше, то транзакция пройдёт, если меньше, то откат транзакции и вернёт bad request
 ```
+
+### Задание 4
+
+В каждый запрос добавил проверку конекта к бд, если выключить docker и кинуть любой запрос, вернёт 500
+```
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.6.1",
+    "title": "An error occurred while processing your request.",
+    "status": 500,
+    "detail": "No access to the database"
+}
+```

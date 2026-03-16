@@ -36,6 +36,11 @@ namespace asp_hub_kt7
                 "/api/User",
                 async ([FromBody] Models.User newUser, AppDbContext db) =>
                 {
+                    if (!await db.Database.CanConnectAsync())
+                    {
+                        return Results.Problem("No access to the database");
+                    }
+
                     db.Users.Add(newUser);
                     await db.SaveChangesAsync();
                     return Results.Ok();
@@ -46,6 +51,11 @@ namespace asp_hub_kt7
                 "/api/UpdateEmail",
                 async (string SearchName, [FromBody] UpdateEmailBody newMailObj, AppDbContext db) =>
                 {
+                    if (!await db.Database.CanConnectAsync())
+                    {
+                        return Results.Problem("No access to the database");
+                    }
+
                     var targets = db.Users.Where(x => x.Name == SearchName);
                     await targets.ForEachAsync(
                         async (User user) =>
@@ -62,6 +72,11 @@ namespace asp_hub_kt7
                 "/api/transacrtions/User",
                 async ([FromBody] Models.User newUser, AppDbContext db) =>
                 {
+                    if (!await db.Database.CanConnectAsync())
+                    {
+                        return Results.Problem("No access to the database");
+                    }
+
                     await using var transaction = await db.Database.BeginTransactionAsync();
 
                     User NewUser = new User
