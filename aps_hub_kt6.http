@@ -1,0 +1,6 @@
+@aps_hub_kt6_HostAddress = http://localhost:5197
+
+GET {{aps_hub_kt6_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
