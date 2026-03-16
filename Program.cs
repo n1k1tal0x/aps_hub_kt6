@@ -31,6 +31,16 @@ namespace asp_hub_kt7
                 app.MapOpenApi();
             }
 
+            app.MapPost(
+                "/api/User",
+                async ([FromBody] Models.User newUser, AppDbContext db) =>
+                {
+                    db.Users.Add(newUser);
+                    await db.SaveChangesAsync();
+                    return Results.Ok();
+                }
+            );
+
             app.UseHttpsRedirection();
 
             app.Run();
