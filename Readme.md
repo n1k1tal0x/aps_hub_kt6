@@ -40,4 +40,17 @@ Body:
 {
     "newEmail": "newEmail@gmail.com"
 }
+
+### Задание 3
+
+POST http://localhost:5197/api/transacrtions/User
+BODY:
+```
+{
+    "Age":18,
+    "Name":"Lorem Name",
+    "Email":"Lorem Main"
+}
+```
+если возраст 18 и больше, то транзакция пройдёт, если меньше, то откат транзакции и вернёт bad request
 ```

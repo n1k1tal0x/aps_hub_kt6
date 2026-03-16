@@ -58,6 +58,33 @@ namespace asp_hub_kt7
                 }
             );
 
+            app.MapPost(
+                "/api/transacrtions/User",
+                async ([FromBody] Models.User newUser, AppDbContext db) =>
+                {
+                    await using var transaction = await db.Database.BeginTransactionAsync();
+
+                    User NewUser = new User
+                    {
+                        Name = newUser.Name,
+                        Email = newUser.Email,
+                        Age = newUser.Age,
+                    };
+                    db.Users.Add(NewUser);
+                    await db.SaveChangesAsync();
+                    if (NewUser.Age >= 18)
+                    {
+                        await transaction.CommitAsync();
+                        return Results.Ok(NewUser);
+                    }
+                    else
+                    {
+                        await transaction.RollbackAsync();
+                        return Results.BadRequest("age smaller 18!");
+                    }
+                }
+            );
+
             app.UseHttpsRedirection();
 
             app.Run();
